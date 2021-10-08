@@ -8,6 +8,7 @@ import (
 	"github.com/0opslab/autngo/common"
 	"github.com/0opslab/autngo/encrypt"
 	"github.com/0opslab/autngo/file"
+	"github.com/0opslab/autngo/http"
 	"github.com/0opslab/autngo/random"
 	sclie "github.com/0opslab/autngo/slice"
 	"github.com/0opslab/autngo/string"
@@ -27,4 +28,5 @@ var (
 	Random random.Random
 	RandomHelper random.RandomHelper
 	SliceHelper sclie.SliceHelper
+	HttpHelper http.HttpHelper
 )
