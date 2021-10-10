@@ -5,9 +5,11 @@ package http
 // @Author  0opslab
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 	"io/ioutil"
+	"net"
 	"net/http"
 	"net/url"
 	"os"
@@ -72,18 +74,27 @@ func  (this *HttpHelper) HttpDownload(url string,file string) bool {
 
 // @title    getCurrentIP
 // @description   获取http请求端ip地址
-func  (this *HttpHelper)  GetCurrentIP(r *http.Request) (string) {
-	ip := r.Header.Get("X-Real-IP")
-	if ip == "" {
-		return r.RemoteAddr
+func  (this *HttpHelper)  GetRemoteIP(req *http.Request) (string) {
+	remoteAddr := req.RemoteAddr
+	if ip := req.Header.Get("X-Real-Ip"); ip != "" {
+			remoteAddr = ip
+	} else if ip = req.Header.Get("X-Forwarded-For"); ip != "" {
+			remoteAddr = ip
+	} else {
+			remoteAddr, _, _ = net.SplitHostPort(remoteAddr)
 	}
-	return ip
+
+	if remoteAddr == "::1" {
+			remoteAddr = "127.0.0.1"
+	}
+	return remoteAddr
 }
 
 //统一响应
 func (this *HttpHelper)  HttpResponse(w http.ResponseWriter,response Response){
 	w.Header().Add("Content-Type", "application/json;charset:utf-8;")
-	fmt.Fprintf(w, response.ToString())
+	raw, _ := json.Marshal(response)
+	fmt.Fprintf(w, string(raw))
 }
 
 func (this *HttpHelper)  HttpResponseCode(w http.ResponseWriter,code int,message string){
@@ -93,7 +104,8 @@ func (this *HttpHelper)  HttpResponseCode(w http.ResponseWriter,code int,message
 		Data: nil,
 	}
 	w.Header().Add("Content-Type", "application/json;charset:utf-8;")
-	fmt.Fprintf(w, response.ToString())
+	raw, _ := json.Marshal(response)
+	fmt.Fprintf(w, string(raw))
 }
 
 func (this *HttpHelper)  HttpResponseCodeData(w http.ResponseWriter,code int,message string,data interface{}){
@@ -103,5 +115,6 @@ func (this *HttpHelper)  HttpResponseCodeData(w http.ResponseWriter,code int,mes
 		Data: data,
 	}
 	w.Header().Add("Content-Type", "application/json;charset:utf-8;")
-	fmt.Fprintf(w, response.ToString())
+	raw, _ := json.Marshal(response)
+	fmt.Fprintf(w, string(raw))
 }
