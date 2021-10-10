@@ -5,6 +5,7 @@ package http
 // @Author  0opslab
 
 import (
+	"fmt"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -77,4 +78,30 @@ func  (this *HttpHelper)  GetCurrentIP(r http.Request) (string) {
 		return r.RemoteAddr
 	}
 	return ip
+}
+
+//统一响应
+func (this *HttpHelper)  HttpResponse(w http.ResponseWriter,response Response){
+	w.Header().Add("Content-Type", "application/json;charset:utf-8;")
+	fmt.Fprintf(w, response.ToString())
+}
+
+func (this *HttpHelper)  HttpResponseCode(w http.ResponseWriter,code int,message string){
+	response := Response{
+		Code: code,
+		Msg:  message,
+		Data: nil,
+	}
+	w.Header().Add("Content-Type", "application/json;charset:utf-8;")
+	fmt.Fprintf(w, response.ToString())
+}
+
+func (this *HttpHelper)  HttpResponseCodeData(w http.ResponseWriter,code int,message string,data interface{}){
+	response := Response{
+		Code: code,
+		Msg:  message,
+		Data: data,
+	}
+	w.Header().Add("Content-Type", "application/json;charset:utf-8;")
+	fmt.Fprintf(w, response.ToString())
 }

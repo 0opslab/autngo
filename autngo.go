@@ -29,4 +29,5 @@ var (
 	RandomHelper random.RandomHelper
 	SliceHelper sclie.SliceHelper
 	HttpHelper http.HttpHelper
+	Response http.Response
 )
