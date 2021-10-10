@@ -15,6 +15,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"regexp"
 	"strings"
 	"time"
 
@@ -190,6 +191,14 @@ func  (ff *FileHelper) MakeDir(dir string) (bool, error) {
 		}
 	}
 	return true, nil
+}
+
+//格式化文件路径
+func   (ff *FileHelper) TrimPathFile(file_name string)string {
+	re2, _ := regexp.Compile("\\\\{1,}")
+	strs := re2.ReplaceAllString(file_name, "/")
+	re3, _ := regexp.Compile("/{2,}")
+	return re3.ReplaceAllString(strs, "/")
 }
 
 // 获取文件大小
