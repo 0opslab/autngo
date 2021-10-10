@@ -72,7 +72,7 @@ func  (this *HttpHelper) HttpDownload(url string,file string) bool {
 
 // @title    getCurrentIP
 // @description   获取http请求端ip地址
-func  (this *HttpHelper)  GetCurrentIP(r http.Request) (string) {
+func  (this *HttpHelper)  GetCurrentIP(r *http.Request) (string) {
 	ip := r.Header.Get("X-Real-IP")
 	if ip == "" {
 		return r.RemoteAddr
