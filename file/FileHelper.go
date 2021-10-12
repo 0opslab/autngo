@@ -185,8 +185,10 @@ func  (ff *FileHelper) IsFile(path string) bool {
 
 // 创建文件夹如果不存在则创建
 func  (ff *FileHelper) MakeDir(dir string) (bool, error) {
-	if !ff.FileIsExist(dir) {
-		if err := os.MkdirAll(dir, 0755); err != nil {
+	dir = ff.TrimPathFile(dir)
+	dirpath := filepath.Dir(dir)
+	if !ff.FileIsExist(dirpath) {
+		if err := os.MkdirAll(dirpath, os.ModePerm); err != nil {
 			return false, err
 		}
 	}

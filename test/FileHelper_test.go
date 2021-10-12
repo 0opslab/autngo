@@ -24,6 +24,8 @@ func TestReadByte(t *testing.T) {
 	}
 	fmt.Println("==============>")
 	fmt.Println(bytes,"====>",Autngo.ByteHelper.BytesToHexString(bytes),"===>",string(bytes))
+	rs,_ := Autngo.FileHepler.MakeDir("C:/temp/System32/drivers/etc/hosts")
+	fmt.Println("===rs:",rs)
 }
 
 
