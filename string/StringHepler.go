@@ -9,9 +9,9 @@ import (
 )
 
 // 封装一些字符串相关的常用方法
-type StringHelper struct{
-
+type StringHelper struct {
 }
+
 // 字符串Base64编码
 func (this *StringHelper) Base64Encode(data string) string {
 	return base64.URLEncoding.EncodeToString([]byte(data))
@@ -48,13 +48,14 @@ func (this *StringHelper) Base64Decode(data string) string {
 // }
 
 // 字符串反转
-func (this *StringHelper) Reverse(s string) string{
+func (this *StringHelper) Reverse(s string) string {
 	r := []rune(s)
 	for i, j := 0, len(r)-1; i < len(r)/2; i, j = i+1, j-1 {
 		r[i], r[j] = r[j], r[i]
 	}
 	return string(r)
 }
+
 //展开并格式化对象以json方式
 func (this *StringHelper) Export(v interface{}) string {
 	b, err := json.Marshal(v)
@@ -74,6 +75,11 @@ func (this *StringHelper) Json(v interface{}) string {
 	return this.Export(v)
 }
 
+//json转对象
+func (this *StringHelper) Json2Object(str string, v interface{}) error {
+	return json.Unmarshal([]byte(str), &v)
+}
+
 // 检测字符串是否为空
 // check string is empty
 func (this *StringHelper) IsEmpty(s string) bool {
@@ -85,15 +91,14 @@ func (this *StringHelper) IsEmpty(s string) bool {
 
 // 判断字符串是否不为空
 // check string is not empty
-func (this *StringHelper) IsNotEmpty(s string) bool{
+func (this *StringHelper) IsNotEmpty(s string) bool {
 	return !this.IsEmpty(s)
 }
 
-
 // 判断字符串是否是空白字符串
 // check string is whitespace,empty
-func (this *StringHelper) IsBlank(s string) bool{
-	if len(s) == 0{
+func (this *StringHelper) IsBlank(s string) bool {
+	if len(s) == 0 {
 		return true
 	}
 	reg := regexp.MustCompile(`^\s+$`)
@@ -105,7 +110,6 @@ func (this *StringHelper) IsBlank(s string) bool{
 }
 
 // 判断字符串是否为不为空白字符串
-func (this *StringHelper) IsNotBlank(s string) bool{
+func (this *StringHelper) IsNotBlank(s string) bool {
 	return !this.IsBlank(s)
 }
-

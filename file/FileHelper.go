@@ -8,6 +8,7 @@ import (
 	"crypto/sha256"
 	"crypto/sha512"
 	"encoding/hex"
+	"encoding/json"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -23,46 +24,76 @@ import (
 )
 
 //@Document 文件相关的操作集合
-type FileHelper struct{
+type FileHelper struct {
 	errors common.ComError
 }
 
 //创建文件，如果存在直接返回
-func (ff *FileHelper) CreateFile(filepath string)(bool,error){
+func (ff *FileHelper) CreateFile(filepath string) (bool, error) {
 	if _, err := os.Stat(filepath); os.IsNotExist(err) {
 		destdir, _ := path.Split(filepath)
-		os.MkdirAll(destdir,os.ModePerm)
-		file,err:=os.Create(filepath)
-		if err!=nil{
-			return false,err
+		os.MkdirAll(destdir, os.ModePerm)
+		file, err := os.Create(filepath)
+		if err != nil {
+			return false, err
 		}
 		defer file.Close()
-		return true,nil
+		return true, nil
 	}
-	return true,nil
+	return true, nil
 }
 
 //打开一个文件支持多目录创建
-func  (ff *FileHelper) CreateOpenFile(filepath string)(*os.File,error){
-	if ff.FileIsExist(filepath){
-		 return  os.OpenFile(filepath, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0644)
+func (ff *FileHelper) CreateOpenFile(filepath string) (*os.File, error) {
+	if ff.FileIsExist(filepath) {
+		return os.OpenFile(filepath, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0644)
 	}
-	destdir, _ := path.Split(strings.ReplaceAll(filepath,"\\","/"))
-	if(len(destdir) > 0 && !ff.FileIsExist(destdir)){
-		if err := os.MkdirAll(destdir,os.ModePerm);err != nil{
-			return nil,ff.errors.ComWithError("MkdirAllError:"+destdir, err)
+	destdir, _ := path.Split(strings.ReplaceAll(filepath, "\\", "/"))
+	if len(destdir) > 0 && !ff.FileIsExist(destdir) {
+		if err := os.MkdirAll(destdir, os.ModePerm); err != nil {
+			return nil, ff.errors.ComWithError("MkdirAllError:"+destdir, err)
 		}
 	}
 	return os.OpenFile(filepath, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0644)
 }
 
 // 读取文件内容
-func  (ff *FileHelper) ReadFile(filepath string) ([]byte, error) {
+func (ff *FileHelper) ReadFile(filepath string) ([]byte, error) {
 	return ioutil.ReadFile(filepath)
 }
 
+// 读取文件内容
+func (ff *FileHelper) ReadAll(file_name string) (string, error) {
+	file, err := os.OpenFile(file_name, os.O_CREATE|os.O_RDWR, 0666)
+	if nil == err {
+		defer file.Close()
+
+		buf, err := ioutil.ReadAll(file)
+		if nil == err {
+			return string(buf), nil
+		}
+		return "", err
+	}
+	return "", err
+}
+
+//读取json文件内容到一个对象中
+func (ff *FileHelper) ReadAll2Object(file_name string, v interface{}) error {
+	file, err := os.OpenFile(file_name, os.O_CREATE|os.O_RDWR, 0666)
+	if nil == err {
+		defer file.Close()
+
+		buf, err := ioutil.ReadAll(file)
+		if nil == err {
+			return json.Unmarshal(buf, &v)
+		}
+		return err
+	}
+	return err
+}
+
 // 读取文件内容按照字节
-func  (ff *FileHelper) ReadByteSize(filepath string,size int) ([]byte,error){
+func (ff *FileHelper) ReadByteSize(filepath string, size int) ([]byte, error) {
 	w1, err0 := os.OpenFile(filepath, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0644)
 	if err0 != nil {
 		return nil, ff.errors.ComWithError("OpenFileError:"+filepath, err0)
@@ -73,16 +104,16 @@ func  (ff *FileHelper) ReadByteSize(filepath string,size int) ([]byte,error){
 	n, err := w1.Read(data)
 	if err != nil {
 		fmt.Println(err)
-		return nil,err
+		return nil, err
 	}
-	return data[:n],nil
+	return data[:n], nil
 }
 
 // 将字符串写入的文件中
-func  (ff *FileHelper) WriteString(filepath, content string) (bool, error) {
+func (ff *FileHelper) WriteString(filepath, content string) (bool, error) {
 	//打开文件，没有则创建，有则append内容
 	w1, err0 := ff.CreateOpenFile(filepath)
-	
+
 	if err0 != nil {
 		return false, ff.errors.ComWithError("OpenFileError:"+filepath, err0)
 	}
@@ -96,10 +127,10 @@ func  (ff *FileHelper) WriteString(filepath, content string) (bool, error) {
 }
 
 // 将字符串写入的文件中
-func  (ff *FileHelper) WriteBytes(filepath string, content []byte) (bool, error) {
+func (ff *FileHelper) WriteBytes(filepath string, content []byte) (bool, error) {
 	//打开文件，没有此文件则创建文件，将写入的内容append进去
 	w1, err0 := os.OpenFile(filepath, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0644)
-	
+
 	if err0 != nil {
 		return false, ff.errors.ComWithError("OpenFileError:"+filepath, err0)
 	}
@@ -113,7 +144,7 @@ func  (ff *FileHelper) WriteBytes(filepath string, content []byte) (bool, error)
 }
 
 //  获取指定目录及所有子目录下的所有文件，可以匹配后缀过滤。
-func  (ff *FileHelper) WalkDirFiles(dirPth, suffix string) (files []string, dirs []string, err error) {
+func (ff *FileHelper) WalkDirFiles(dirPth, suffix string) (files []string, dirs []string, err error) {
 	files = make([]string, 0, 30)
 	dirs = make([]string, 0, 30)
 
@@ -132,19 +163,19 @@ func  (ff *FileHelper) WalkDirFiles(dirPth, suffix string) (files []string, dirs
 }
 
 // 遍历指定文件返回符合filter的文件和文件夹
-func  (ff *FileHelper) WalkDirFilesFilter(dirPath string, filter func(string) bool) (files []string, dirs []string, err error) {
+func (ff *FileHelper) WalkDirFilesFilter(dirPath string, filter func(string) bool) (files []string, dirs []string, err error) {
 	files = make([]string, 0, 30)
 	dirs = make([]string, 0, 30)
 
 	err = filepath.Walk(dirPath, func(filename string, fi os.FileInfo, err error) error {
 		if fi.IsDir() {
-			if (filter(filename)) {
+			if filter(filename) {
 				dirs = append(dirs, filename)
 				return nil
 			}
 			return nil
 		}
-		if (filter(filename)) {
+		if filter(filename) {
 			files = append(files, filename)
 		}
 		return nil
@@ -153,15 +184,15 @@ func  (ff *FileHelper) WalkDirFilesFilter(dirPath string, filter func(string) bo
 }
 
 // 变量指定文件并使用指定函数进行处理
-func  (ff *FileHelper) WalkDirFilesHandler(dirPath string, handler func(string)){
+func (ff *FileHelper) WalkDirFilesHandler(dirPath string, handler func(string)) {
 	filepath.Walk(dirPath, func(filename string, fi os.FileInfo, err error) error {
-			handler(filename)
-			return nil
-		})
+		handler(filename)
+		return nil
+	})
 }
 
 // 判断文件是否存在
-func  (ff *FileHelper) FileIsExist(file string) bool {
+func (ff *FileHelper) FileIsExist(file string) bool {
 	exists := true
 	if _, err := os.Stat(file); os.IsNotExist(err) {
 		exists = false
@@ -170,7 +201,7 @@ func  (ff *FileHelper) FileIsExist(file string) bool {
 }
 
 // 判断文件是否是文件夹
-func  (ff *FileHelper) IsDir(path string) bool {
+func (ff *FileHelper) IsDir(path string) bool {
 	s, err := os.Stat(path)
 	if err != nil {
 		return false
@@ -179,12 +210,12 @@ func  (ff *FileHelper) IsDir(path string) bool {
 }
 
 // 判断文件是否是文件
-func  (ff *FileHelper) IsFile(path string) bool {
+func (ff *FileHelper) IsFile(path string) bool {
 	return !ff.IsDir(path)
 }
 
 // 创建文件夹如果不存在则创建
-func  (ff *FileHelper) MakeDir(dir string) (bool, error) {
+func (ff *FileHelper) MakeDir(dir string) (bool, error) {
 	dir = ff.TrimPathFile(dir)
 	dirpath := filepath.Dir(dir)
 	if !ff.FileIsExist(dirpath) {
@@ -196,7 +227,7 @@ func  (ff *FileHelper) MakeDir(dir string) (bool, error) {
 }
 
 //格式化文件路径
-func   (ff *FileHelper) TrimPathFile(file_name string)string {
+func (ff *FileHelper) TrimPathFile(file_name string) string {
 	re2, _ := regexp.Compile("\\\\{1,}")
 	strs := re2.ReplaceAllString(file_name, "/")
 	re3, _ := regexp.Compile("/{2,}")
@@ -204,7 +235,7 @@ func   (ff *FileHelper) TrimPathFile(file_name string)string {
 }
 
 // 获取文件大小
-func  (ff *FileHelper) FileSize(file string) (int64, error) {
+func (ff *FileHelper) FileSize(file string) (int64, error) {
 	f, e := os.Stat(file)
 	if e != nil {
 		return 0, ff.errors.ComWithError("GetFileSize error:"+file, e)
@@ -213,7 +244,7 @@ func  (ff *FileHelper) FileSize(file string) (int64, error) {
 }
 
 // 获取文件md5值
-func  (ff *FileHelper) Md5File(path string) (string, error) {
+func (ff *FileHelper) Md5File(path string) (string, error) {
 	f, err := os.Open(path)
 	if err != nil {
 		return "", err
@@ -228,7 +259,7 @@ func  (ff *FileHelper) Md5File(path string) (string, error) {
 }
 
 // 获取文件sha1值
-func  (ff *FileHelper) Sha1File(path string) (string, error) {
+func (ff *FileHelper) Sha1File(path string) (string, error) {
 	f, err := os.Open(path)
 	if err != nil {
 		return "", err
@@ -243,7 +274,7 @@ func  (ff *FileHelper) Sha1File(path string) (string, error) {
 }
 
 // 文件sha256值
-func  (ff *FileHelper) Sha256File(path string) (string, error) {
+func (ff *FileHelper) Sha256File(path string) (string, error) {
 	f, err := os.Open(path)
 	if err != nil {
 		return "", err
@@ -258,7 +289,7 @@ func  (ff *FileHelper) Sha256File(path string) (string, error) {
 }
 
 // 文件sha512值
-func  (ff *FileHelper) Sha512File(path string) (string, error) {
+func (ff *FileHelper) Sha512File(path string) (string, error) {
 	f, err := os.Open(path)
 	if err != nil {
 		return "", err
@@ -273,7 +304,7 @@ func  (ff *FileHelper) Sha512File(path string) (string, error) {
 }
 
 // 复制文件
-func  (ff *FileHelper) CopyFile(srcName string, dstName string) (written int64, err error) {
+func (ff *FileHelper) CopyFile(srcName string, dstName string) (written int64, err error) {
 	src, err := os.Open(srcName)
 
 	if err != nil {
@@ -282,7 +313,7 @@ func  (ff *FileHelper) CopyFile(srcName string, dstName string) (written int64, 
 	defer src.Close()
 
 	dst, err := os.OpenFile(dstName, os.O_WRONLY|os.O_CREATE, 0644)
-	
+
 	if err != nil {
 		return 0, err
 	}
@@ -292,7 +323,7 @@ func  (ff *FileHelper) CopyFile(srcName string, dstName string) (written int64, 
 }
 
 //复制目录
-func  (ff *FileHelper) CopyDir(srcPath string, destPath string) (bool, error) {
+func (ff *FileHelper) CopyDir(srcPath string, destPath string) (bool, error) {
 	if !ff.IsDir(srcPath) {
 		return false, ff.errors.ComError("SrcPathIsNotExistOrIsNotDir:" + srcPath)
 	}
@@ -322,7 +353,7 @@ func  (ff *FileHelper) CopyDir(srcPath string, destPath string) (bool, error) {
 }
 
 // 将指定的目录或文件压缩到指定的zip中
-func  (ff *FileHelper) ZipCompress(srcFile string, destZip string) error {
+func (ff *FileHelper) ZipCompress(srcFile string, destZip string) error {
 	if ff.FileIsExist(destZip) {
 		return ff.errors.ComError("FileISExist:" + destZip)
 	}
@@ -345,7 +376,7 @@ func  (ff *FileHelper) ZipCompress(srcFile string, destZip string) error {
 			}
 			header.Name = strings.TrimPrefix(path, filepath.Dir(srcFile))
 			if info.IsDir() {
-				if (header.Name == srcFile) {
+				if header.Name == srcFile {
 					return nil
 				}
 				header.Name += "/"
@@ -358,7 +389,7 @@ func  (ff *FileHelper) ZipCompress(srcFile string, destZip string) error {
 				return err
 			}
 
-			if ! info.IsDir() {
+			if !info.IsDir() {
 				file, err := os.Open(path)
 				if err != nil {
 					return err
@@ -378,9 +409,9 @@ func  (ff *FileHelper) ZipCompress(srcFile string, destZip string) error {
 }
 
 // 将指定的zip的文件压缩到指定的目录下
-func  (ff *FileHelper) ZipUnCompress(zipFile string, destDir string) error {
-	if ff.FileIsExist(destDir){
-		return ff.errors.ComError("The file already exists:"+destDir)
+func (ff *FileHelper) ZipUnCompress(zipFile string, destDir string) error {
+	if ff.FileIsExist(destDir) {
+		return ff.errors.ComError("The file already exists:" + destDir)
 	}
 	zipReader, err := zip.OpenReader(zipFile)
 	if err != nil {
@@ -418,12 +449,8 @@ func  (ff *FileHelper) ZipUnCompress(zipFile string, destDir string) error {
 	return nil
 }
 
-
-
-
-
 // WriteLinesSlice writes the given slice of lines to the given file.
-func  (ff *FileHelper) WriteLinesSlice(lines []string, path string) error {
+func (ff *FileHelper) WriteLinesSlice(lines []string, path string) error {
 	file, err := os.Create(path)
 	if err != nil {
 		return err
@@ -450,7 +477,7 @@ func  (ff *FileHelper) WriteLinesSlice(lines []string, path string) error {
 //
 // nil is returned if there is an error opening the file
 //
-func  (ff *FileHelper) ReadLinesSlice(path string) ([]string, error) {
+func (ff *FileHelper) ReadLinesSlice(path string) ([]string, error) {
 	file, err := os.Open(path)
 	if err != nil {
 		return nil, err
@@ -477,7 +504,7 @@ func  (ff *FileHelper) ReadLinesSlice(path string) ([]string, error) {
 //
 // nil is returned (with the error) if there is an error opening the file
 //
-func  (ff *FileHelper) ReadLinesChannel(filePath string) (<-chan string, error) {
+func (ff *FileHelper) ReadLinesChannel(filePath string) (<-chan string, error) {
 	c := make(chan string)
 	file, err := os.Open(filePath)
 	if err != nil {
@@ -495,7 +522,7 @@ func  (ff *FileHelper) ReadLinesChannel(filePath string) (<-chan string, error) 
 }
 
 //获取文件修改时间 返回unix时间戳
-func  (ff *FileHelper)  GetFileModTime(path string) int64 {
+func (ff *FileHelper) GetFileModTime(path string) int64 {
 	f, err := os.Open(path)
 	if err != nil {
 		log.Println("open file error")
