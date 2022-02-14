@@ -13,7 +13,6 @@ type ComError struct {
 	stack string
 }
 
-
 const logFormat = "%v : %d - %s \n %s "
 
 func (m *ComError) Error() string {
@@ -29,9 +28,10 @@ func (m *ComError) ComError(strMsg string) *ComError {
 		stack: string(debug.Stack()),
 	}
 }
+
 // 根据信息包装指定的错误消息
 func (m *ComError) ComWithError(strMsg string, err error) *ComError {
-	if (err != nil) {
+	if err != nil {
 		strMsg += " " + err.Error()
 	}
 	return &ComError{
@@ -41,6 +41,7 @@ func (m *ComError) ComWithError(strMsg string, err error) *ComError {
 		stack: string(debug.Stack()),
 	}
 }
+
 // 根据错误编码和消息生成错误消息
 func (m *ComError) ComErrorCode(i int, strMsg string) *ComError {
 	return &ComError{
@@ -50,9 +51,10 @@ func (m *ComError) ComErrorCode(i int, strMsg string) *ComError {
 		stack: string(debug.Stack()),
 	}
 }
+
 // 根据错误编码和消息包装指定错误消息
 func (m *ComError) ComWithErrorCode(i int, strMsg string, err error) *ComError {
-	if (err != nil) {
+	if err != nil {
 		strMsg += " " + err.Error()
 	}
 	return &ComError{
