@@ -19,7 +19,7 @@ func TestRandom_GoRandomString(t *testing.T) {
 	}
 }
 
-func TestRandom_String(t *testing.T){
+func TestRandom_String(t *testing.T) {
 	//封装的随机数方法使用
 	rand := Autngo.RandomHelper.NewRandom()
 	for i := 0; i < 10; i++ {
@@ -27,9 +27,10 @@ func TestRandom_String(t *testing.T){
 		fmt.Println(rand.GetUUID())
 		fmt.Println(rand.GetUint32())
 
-		fmt.Println(Autngo.RandomHelper.String(8,random.Numeric))
-		fmt.Println(Autngo.RandomHelper.String(32,random.Alphanumeric))
+		fmt.Println(Autngo.RandomHelper.String(8, random.Numeric))
+		fmt.Println(Autngo.RandomHelper.String(32, random.Alphanumeric))
 		fmt.Println(Autngo.RandomHelper.RandomString(10))
 		fmt.Println(Autngo.RandomHelper.RandomInt(10))
+		fmt.Println("===")
 	}
 }

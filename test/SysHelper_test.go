@@ -8,7 +8,7 @@ import (
 )
 
 func TestGetLogicalDrives_Windows(t *testing.T) {
-	drivers  := Autngo.SysHelper.GetLogicalDrives()
-	fmt.Println(drivers)
-	print(Autngo.SysHelper.GetLocalIP())
+	Autngo.SysHelper.OsInfo()
+	ip := Autngo.SysHelper.GetLocalIP()
+	fmt.Print(ip)
 }

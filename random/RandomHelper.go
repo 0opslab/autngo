@@ -7,9 +7,9 @@ import (
 	"time"
 )
 
-type RandomHelper struct{
-
+type RandomHelper struct {
 }
+
 const (
 	Uppercase              = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 	Lowercase              = "abcdefghijklmnopqrstuvwxyz"
@@ -40,7 +40,7 @@ func (ss *RandomHelper) NewRandom() *Random {
 	return random
 }
 
-func (ss *RandomHelper)  NewRandomGen(prefix string, startValue uint32) *Random {
+func (ss *RandomHelper) NewRandomGen(prefix string, startValue uint32) *Random {
 	rand.Seed(time.Now().UnixNano())
 	random := &Random{
 		Prefix:       prefix,
@@ -77,7 +77,7 @@ func (this *Random) GetUint32() uint32 {
 }
 
 //从给定的字符串中随机指定长度的字符串
-func (ss *RandomHelper)  String(length uint8, charsets ...string) string {
+func (ss *RandomHelper) String(length uint8, charsets ...string) string {
 	charset := strings.Join(charsets, "")
 	if charset == "" {
 		charset = Alphanumeric
@@ -101,16 +101,5 @@ func (ss *RandomHelper) RandomString(length uint8) string {
 //随机指定范围的整数(伪随机数，其实一般用也没错)
 func (ss *RandomHelper) RandomInt(length int) int {
 	rand.Seed(time.Now().Unix())
-	return rand.Intn(100)
+	return rand.Intn(length)
 }
-
-//生成Guid字串
-// func Guid() string {
-// 	b := make([]byte, 48)
-
-// 	if _, err := io.ReadFull(crand.Reader, b); err != nil {
-// 		return ""
-// 	}
-
-// 	//return Md5String(base64.URLEncoding.EncodeToString(b))
-// }

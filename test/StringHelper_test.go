@@ -8,7 +8,7 @@ import (
 )
 
 func TestBase64(t *testing.T) {
-	strs := "this is测试字符串";
+	strs := "this is测试字符串"
 	base64 := Autngo.StringHelper.Base64Encode(strs)
 	strs1 := Autngo.StringHelper.Base64Decode(base64)
 
