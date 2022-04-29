@@ -12,8 +12,8 @@ func TestSclieStr(t *testing.T) {
 	slice1 := []string{"1", "2", "3", "6", "8"}
 	slice2 := []string{"2", "3", "5", "0"}
 
-	un := Autngo.SliceHelper.Union(slice1,slice2)
-	fmt.Println(un)
+	un := Autngo.SliceHelper.Union(slice1, slice2)
+	fmt.Println("slice1与slice2的交集为：", un)
 
 	in := Autngo.SliceHelper.Intersect(slice1, slice2)
 	fmt.Println("slice1与slice2的交集为：", in)
@@ -22,7 +22,7 @@ func TestSclieStr(t *testing.T) {
 	fmt.Println("slice1与slice2的差集为：", di)
 }
 
-type UserInfo struct{
+type UserInfo struct {
 	Name string
-	Age int
+	Age  int
 }

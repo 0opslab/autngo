@@ -1,4 +1,4 @@
-package byte
+package autn
 
 import (
 	"bytes"
@@ -9,9 +9,9 @@ import (
 	"encoding/hex"
 	"strconv"
 )
+
 type ByteHelper struct {
 }
-
 
 // Md5Byte 获取字节数组md5值
 func (sa *ByteHelper) Md5Byte(s []byte) string {

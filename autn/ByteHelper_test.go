@@ -1,12 +1,12 @@
-package test
+package autn
 
 import (
 	"fmt"
 	"testing"
-	"github.com/0opslab/autngo"
 )
 
 func TestMd5Byte(t *testing.T) {
+	var help ByteHelper
 	data := []byte("TestString测试")
-	fmt.Println(autngo.ByteHelper.Md5Byte(data))
+	fmt.Println(help.Md5Byte(data))
 }

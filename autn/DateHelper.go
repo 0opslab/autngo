@@ -1,4 +1,4 @@
-package date
+package autn
 
 import (
 	"fmt"
@@ -10,18 +10,8 @@ type DateHelper struct {
 	Location time.Location
 }
 
-//常量
-const (
-	RFC3339 = "2006-01-02T15:04:05+08:00"
-	TT      = "2006-01-02 15:04:05"
-	YMD     = "2006-01-02"
-	HMS     = "15:04:05"
-)
-
 //时区
 var Location = time.FixedZone("Asia/Shanghai", 8*60*60)
-
-
 
 //获取当前时间 年-月-日 时:分:秒
 func (gt *DateHelper) Now() string {

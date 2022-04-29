@@ -1,4 +1,6 @@
-package sys
+package autn
+
+import "fmt"
 
 //封装与操作系统相关的一些操作
 type WinHelper struct {
@@ -6,6 +8,7 @@ type WinHelper struct {
 
 // windows获取系统盘符
 func (ss *WinHelper) GetLogicalDrives() []string {
+	fmt.Println("Need to manually open:GetLogicalDrives")
 	// if runtime.GOOS == "windows" {
 	// 	// windows系统
 	// 	kernel32 := syscall.MustLoadDLL("kernel32.dll")

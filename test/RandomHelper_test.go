@@ -7,7 +7,6 @@ import (
 	"time"
 
 	Autngo "github.com/0opslab/autngo"
-	"github.com/0opslab/autngo/random"
 )
 
 func TestRandom_GoRandomString(t *testing.T) {
@@ -27,8 +26,8 @@ func TestRandom_String(t *testing.T) {
 		fmt.Println(rand.GetUUID())
 		fmt.Println(rand.GetUint32())
 
-		fmt.Println(Autngo.RandomHelper.String(8, random.Numeric))
-		fmt.Println(Autngo.RandomHelper.String(32, random.Alphanumeric))
+		fmt.Println(Autngo.RandomHelper.String(8, Autngo.Numeric))
+		fmt.Println(Autngo.RandomHelper.String(32, Autngo.Alphanumeric))
 		fmt.Println(Autngo.RandomHelper.RandomString(10))
 		fmt.Println(Autngo.RandomHelper.RandomInt(10))
 		fmt.Println("===")
