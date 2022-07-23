@@ -26,8 +26,8 @@ func TestRandom_String(t *testing.T) {
 		fmt.Println(rand.GetUUID())
 		fmt.Println(rand.GetUint32())
 
-		fmt.Println(Autngo.RandomHelper.String(8, Autngo.Numeric))
-		fmt.Println(Autngo.RandomHelper.String(32, Autngo.Alphanumeric))
+		fmt.Println(Autngo.RandomHelper.String(8, Autngo.CST_ALPHANUMERIC))
+		fmt.Println(Autngo.RandomHelper.String(32, Autngo.CST_ALPHANUMERIC))
 		fmt.Println(Autngo.RandomHelper.RandomString(10))
 		fmt.Println(Autngo.RandomHelper.RandomInt(10))
 		fmt.Println("===")

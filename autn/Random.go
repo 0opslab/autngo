@@ -42,7 +42,7 @@ func (ss *RandomHelper) NewRandomGen(prefix string, startValue uint32) *Random {
 func (tt *Random) startGen() {
 	go func() {
 		for {
-			if tt.idGen == MAXUINT32 {
+			if tt.idGen == CST_MAXUINT32 {
 				tt.idGen = 1
 			} else {
 				tt.idGen += 1

@@ -13,7 +13,7 @@ type RandomHelper struct {
 func (ss *RandomHelper) String(length uint8, charsets ...string) string {
 	charset := strings.Join(charsets, "")
 	if charset == "" {
-		charset = Alphanumeric
+		charset = CST_ALPHANUMERIC
 	}
 	b := make([]byte, length)
 	for i := range b {
@@ -26,7 +26,7 @@ func (ss *RandomHelper) String(length uint8, charsets ...string) string {
 func (ss *RandomHelper) RandomString(length uint8) string {
 	b := make([]byte, length)
 	for i := range b {
-		b[i] = AlphanumericLow[rand.Int63()%int64(len(AlphanumericLow))]
+		b[i] = CST_ALPHANUMERICLOW[rand.Int63()%int64(len(CST_ALPHANUMERICLOW))]
 	}
 	return string(b)
 }

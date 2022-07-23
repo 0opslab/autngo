@@ -21,10 +21,10 @@ func TestWalkDirFilesHandler2(t *testing.T) {
 		isdir := 1
 		mtime := int64(0)
 		fileSize := int64(0)
-		if Autngo.FileHepler.IsFile(fileName) {
+		if Autngo.FileHelper.IsFile(fileName) {
 			isdir = 0
-			mtime = Autngo.FileHepler.GetFileModTime(fileName)
-			fileSize, _ = Autngo.FileHepler.FileSize(fileName)
+			mtime = Autngo.FileHelper.GetFileModTime(fileName)
+			fileSize, _ = Autngo.FileHelper.FileSize(fileName)
 		}
 		result := "{\"isdir\":\"%v\",\"mtime\":\"%v\",\"fileName\":\"%v\",\"fileSize\":\"%v\"}"
 		s := fmt.Sprintf(result, isdir, mtime, fileName, fileSize)

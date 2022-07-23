@@ -1,4 +1,4 @@
-package encrypt
+package autn
 
 import (
 	"bufio"
@@ -8,14 +8,12 @@ import (
 	"encoding/pem"
 	"io"
 	"os"
-
-	common "github.com/0opslab/autngo/common"
-	futil "github.com/0opslab/autngo/file"
 )
-type EncryptHelper struct{
-	errors common.ComError
-	futil	futil.FileHelper
+
+type RsaHelper struct {
+	fs FileHelper
 }
+
 // 私钥生成
 //openssl genrsa -out rsa_private_key.pem 1024
 var privateKey = []byte(`
@@ -47,14 +45,14 @@ y682X1+R1lRK8D+vmQIDAQAB
 -----END PUBLIC KEY-----
 `)
 
-
-
 // 公钥加密私钥解密
-func (this *EncryptHelper) RsaEncryptWithPublic(origData []byte) ([]byte, error) {
+func (en *RsaHelper) RsaEncryptWithPublic(origData []byte) ([]byte, error) {
 	//解密pem格式的公钥
 	block, _ := pem.Decode(publicKey)
 	if block == nil {
-		return nil, this.errors.ComError("public key error")
+		{
+			return nil, ErrorMsg("public key error", nil)
+		}
 	}
 	// 解析公钥
 	pubInterface, err := x509.ParsePKIXPublicKey(block.Bytes)
@@ -65,19 +63,21 @@ func (this *EncryptHelper) RsaEncryptWithPublic(origData []byte) ([]byte, error)
 	pub := pubInterface.(*rsa.PublicKey)
 	//加密
 	return rsa.EncryptPKCS1v15(rand.Reader, pub, origData)
+
 }
 
-func  (this *EncryptHelper) RsaEncryptFileWithPublic(src,dst string) (bool, error) {
+//公钥加密私钥解密文件
+func (en *RsaHelper) RsaEncryptFileWithPublic(src, dst string) (bool, error) {
 
 	r1, err0 := os.OpenFile(src, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0644)
 	if err0 != nil {
-		return false, this.errors.ComWithError("OpenFileError:"+src, err0)
+		return false, err0
 	}
 	defer r1.Close()
 
-	w1, err1 := this.futil.CreateOpenFile(dst)
+	w1, err1 := en.fs.CreateOpenFile(dst)
 	if err1 != nil {
-		return false, this.errors.ComWithError("CreateFileError:"+dst, err0)
+		return false, ErrorMsg("CreateFileError:"+dst, err0)
 	}
 	defer w1.Close()
 
@@ -89,22 +89,25 @@ func  (this *EncryptHelper) RsaEncryptFileWithPublic(src,dst string) (bool, erro
 			if err == io.EOF {
 				break
 			}
-			return false,err
+			return false, err
 		}
 		rsdata := buf[:readNum]
-		rsaData,err := this.RsaEncryptWithPublic(rsdata)
+		rsaData, err := en.RsaEncryptWithPublic(rsdata)
+		if err != nil {
+			return false, err
+		}
 		w1.Write(rsaData)
 
 	}
-	return true,nil
+	return true, nil
 }
 
 // 公钥加密私钥解密
-func  (this *EncryptHelper) RsaDecryptWithPrivte(ciphertext []byte) ([]byte, error) {
+func (en *RsaHelper) RsaDecryptWithPrivte(ciphertext []byte) ([]byte, error) {
 	//解密
 	block, _ := pem.Decode(privateKey)
 	if block == nil {
-		return nil, this.errors.ComError("private key error!")
+		return nil, ErrorMsg("private key error!", nil)
 	}
 	//解析PKCS1格式的私钥
 	priv, err := x509.ParsePKCS1PrivateKey(block.Bytes)
@@ -114,17 +117,19 @@ func  (this *EncryptHelper) RsaDecryptWithPrivte(ciphertext []byte) ([]byte, err
 	// 解密
 	return rsa.DecryptPKCS1v15(rand.Reader, priv, ciphertext)
 }
-func  (this *EncryptHelper) RsaDecryptFileWithPrivte(src,dst string) (bool, error) {
+
+//公钥加密私钥解密文件
+func (en *RsaHelper) RsaDecryptFileWithPrivte(src, dst string) (bool, error) {
 
 	r1, err0 := os.OpenFile(src, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0644)
 	if err0 != nil {
-		return false, this.errors.ComWithError("OpenFileError:"+src, err0)
+		return false, ErrorMsg("OpenFileError:"+src, err0)
 	}
 	defer r1.Close()
 
-	w1, err1 := this.futil.CreateOpenFile(dst)
+	w1, err1 := en.fs.CreateOpenFile(dst)
 	if err1 != nil {
-		return false, this.errors.ComWithError("CreateFileError:"+dst, err1)
+		return false, ErrorMsg("CreateFileError:"+dst, err1)
 	}
 	defer w1.Close()
 
@@ -136,11 +141,14 @@ func  (this *EncryptHelper) RsaDecryptFileWithPrivte(src,dst string) (bool, erro
 			if err == io.EOF {
 				break
 			}
-			return false,err
+			return false, err
 		}
 		rsdata := buf[:readNum]
-		rsaData,err := this.RsaDecryptWithPrivte(rsdata)
+		rsaData, err := en.RsaDecryptWithPrivte(rsdata)
+		if err != nil {
+			return false, err
+		}
 		w1.Write(rsaData)
 	}
-	return true,nil
+	return true, nil
 }

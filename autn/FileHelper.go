@@ -1,7 +1,6 @@
-package file
+package autn
 
 import (
-	"archive/zip"
 	"bufio"
 	"crypto/md5"
 	"crypto/sha1"
@@ -19,13 +18,10 @@ import (
 	"regexp"
 	"strings"
 	"time"
-
-	"github.com/0opslab/autngo/common"
 )
 
 //@Document 文件相关的操作集合
 type FileHelper struct {
-	errors common.ComError
 }
 
 //创建文件，如果存在直接返回
@@ -51,7 +47,7 @@ func (ff *FileHelper) CreateOpenFile(filepath string) (*os.File, error) {
 	destdir, _ := path.Split(strings.ReplaceAll(filepath, "\\", "/"))
 	if len(destdir) > 0 && !ff.FileIsExist(destdir) {
 		if err := os.MkdirAll(destdir, os.ModePerm); err != nil {
-			return nil, ff.errors.ComWithError("MkdirAllError:"+destdir, err)
+			return nil, ErrorMsg("MkdirAllError:"+destdir, err)
 		}
 	}
 	return os.OpenFile(filepath, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0644)
@@ -96,7 +92,7 @@ func (ff *FileHelper) ReadAll2Object(file_name string, v interface{}) error {
 func (ff *FileHelper) ReadByteSize(filepath string, size int) ([]byte, error) {
 	w1, err0 := os.OpenFile(filepath, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0644)
 	if err0 != nil {
-		return nil, ff.errors.ComWithError("OpenFileError:"+filepath, err0)
+		return nil, ErrorMsg("OpenFileError:"+filepath, err0)
 	}
 	defer w1.Close()
 
@@ -115,13 +111,13 @@ func (ff *FileHelper) WriteString(filepath, content string) (bool, error) {
 	w1, err0 := ff.CreateOpenFile(filepath)
 
 	if err0 != nil {
-		return false, ff.errors.ComWithError("OpenFileError:"+filepath, err0)
+		return false, ErrorMsg("OpenFileError:"+filepath, err0)
 	}
 	defer w1.Close()
 
 	_, err1 := w1.Write([]byte(content))
 	if err1 != nil {
-		return false, ff.errors.ComWithError("WriteFileError:"+filepath, err1)
+		return false, ErrorMsg("WriteFileError:"+filepath, err1)
 	}
 	return true, nil
 }
@@ -132,13 +128,13 @@ func (ff *FileHelper) WriteBytes(filepath string, content []byte) (bool, error) 
 	w1, err0 := os.OpenFile(filepath, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0644)
 
 	if err0 != nil {
-		return false, ff.errors.ComWithError("OpenFileError:"+filepath, err0)
+		return false, ErrorMsg("OpenFileError:"+filepath, err0)
 	}
 	defer w1.Close()
 
 	_, err1 := w1.Write(content)
 	if err1 != nil {
-		return false, ff.errors.ComWithError("WriteFileError:"+filepath, err1)
+		return false, ErrorMsg("WriteFileError:"+filepath, err1)
 	}
 	return true, nil
 }
@@ -228,7 +224,7 @@ func (ff *FileHelper) MakeDir(dir string) (bool, error) {
 
 //格式化文件路径
 func (ff *FileHelper) TrimPathFile(file_name string) string {
-	re2, _ := regexp.Compile("\\\\{1,}")
+	re2, _ := regexp.Compile(`\{1,}`)
 	strs := re2.ReplaceAllString(file_name, "/")
 	re3, _ := regexp.Compile("/{2,}")
 	return re3.ReplaceAllString(strs, "/")
@@ -238,7 +234,7 @@ func (ff *FileHelper) TrimPathFile(file_name string) string {
 func (ff *FileHelper) FileSize(file string) (int64, error) {
 	f, e := os.Stat(file)
 	if e != nil {
-		return 0, ff.errors.ComWithError("GetFileSize error:"+file, e)
+		return 0, ErrorMsg("GetFileSize error:"+file, e)
 	}
 	return f.Size(), nil
 }
@@ -325,20 +321,20 @@ func (ff *FileHelper) CopyFile(srcName string, dstName string) (written int64, e
 //复制目录
 func (ff *FileHelper) CopyDir(srcPath string, destPath string) (bool, error) {
 	if !ff.IsDir(srcPath) {
-		return false, ff.errors.ComError("SrcPathIsNotExistOrIsNotDir:" + srcPath)
+		return false, ErrorMsg("SrcPathIsNotExistOrIsNotDir:"+srcPath, nil)
 	}
 	if _, err := ff.MakeDir(destPath); err != nil {
-		return false, ff.errors.ComError("MakeDestPathIsNotExistOrMakeFail:" + destPath)
+		return false, ErrorMsg("MakeDestPathIsNotExistOrMakeFail:"+destPath, nil)
 	}
 
-	fmt.Println("CopyDir", srcPath, "==>", destPath)
+	//fmt.Println("CopyDir", srcPath, "==>", destPath)
 	err := filepath.Walk(srcPath, func(path string, f os.FileInfo, err error) error {
 		if f == nil {
 			return err
 		}
 		path = strings.ReplaceAll(path, "\\", "/")
 		destNewPath := strings.Replace(path, srcPath, destPath, -1)
-		fmt.Println("Copy:", path, "==>", destNewPath)
+		//fmt.Println("Copy:", path, "==>", destNewPath)
 		if ff.IsDir(path) {
 			ff.MakeDir(destNewPath)
 		} else {
@@ -347,106 +343,9 @@ func (ff *FileHelper) CopyDir(srcPath string, destPath string) (bool, error) {
 		return nil
 	})
 	if err != nil {
-		return false, ff.errors.ComWithError("CopyError:", err)
+		return false, ErrorMsg("CopyError:", err)
 	}
 	return true, nil
-}
-
-// 将指定的目录或文件压缩到指定的zip中
-func (ff *FileHelper) ZipCompress(srcFile string, destZip string) error {
-	if ff.FileIsExist(destZip) {
-		return ff.errors.ComError("FileISExist:" + destZip)
-	}
-	if zipfile, err := os.Create(destZip); err != nil {
-		return err
-	} else {
-		defer zipfile.Close()
-
-		archive := zip.NewWriter(zipfile)
-		defer archive.Close()
-
-		err2 := filepath.Walk(srcFile, func(path string, info os.FileInfo, err error) error {
-			if err != nil {
-				return err
-			}
-
-			header, err := zip.FileInfoHeader(info)
-			if err != nil {
-				return err
-			}
-			header.Name = strings.TrimPrefix(path, filepath.Dir(srcFile))
-			if info.IsDir() {
-				if header.Name == srcFile {
-					return nil
-				}
-				header.Name += "/"
-			} else {
-				header.Method = zip.Deflate
-			}
-
-			writer, err := archive.CreateHeader(header)
-			if err != nil {
-				return err
-			}
-
-			if !info.IsDir() {
-				file, err := os.Open(path)
-				if err != nil {
-					return err
-				}
-				defer file.Close()
-				_, err = io.Copy(writer, file)
-				if err != nil {
-					return err
-				}
-			}
-			return err
-		})
-
-		return err2
-	}
-
-}
-
-// 将指定的zip的文件压缩到指定的目录下
-func (ff *FileHelper) ZipUnCompress(zipFile string, destDir string) error {
-	if ff.FileIsExist(destDir) {
-		return ff.errors.ComError("The file already exists:" + destDir)
-	}
-	zipReader, err := zip.OpenReader(zipFile)
-	if err != nil {
-		return err
-	}
-	defer zipReader.Close()
-
-	for _, f := range zipReader.File {
-		fpath := filepath.Join(destDir, f.Name)
-		if f.FileInfo().IsDir() {
-			os.MkdirAll(fpath, os.ModePerm)
-		} else {
-			if err = os.MkdirAll(filepath.Dir(fpath), os.ModePerm); err != nil {
-				return err
-			}
-
-			inFile, err := f.Open()
-			if err != nil {
-				return err
-			}
-			defer inFile.Close()
-
-			outFile, err := os.OpenFile(fpath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, f.Mode())
-			if err != nil {
-				return err
-			}
-			defer outFile.Close()
-
-			_, err = io.Copy(outFile, inFile)
-			if err != nil {
-				return err
-			}
-		}
-	}
-	return nil
 }
 
 // WriteLinesSlice writes the given slice of lines to the given file.

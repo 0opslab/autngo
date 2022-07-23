@@ -2,31 +2,27 @@ package autngo
 
 import (
 	"github.com/0opslab/autngo/autn"
-	"github.com/0opslab/autngo/encode"
-
-	"github.com/0opslab/autngo/common"
-	"github.com/0opslab/autngo/encrypt"
-	"github.com/0opslab/autngo/file"
-	"github.com/0opslab/autngo/http"
 )
 
 const (
-	RFC3339         = "2006-01-02T15:04:05+08:00"
-	TT              = "2006-01-02 15:04:05"
-	YMD             = "2006-01-02"
-	HMS             = "15:04:05"
-	Uppercase       = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-	Lowercase       = "abcdefghijklmnopqrstuvwxyz"
-	Alphabetic      = Uppercase + Lowercase
-	Numeric         = "0123456789"
-	Alphanumeric    = Alphabetic + Numeric
-	AlphanumericLow = Uppercase + Numeric
-	Symbols         = "`" + `~!@#$%^&*()-_+={}[]|\;:"<>,./?`
-	Hex             = Numeric + "abcdef"
-	MAXUINT32       = 4294967295
+	CST_TIME_RFC3339    = "2006-01-02T15:04:05+08:00"
+	CST_TIME_TT         = "2006-01-02 15:04:05"
+	CST_TIME_YMD        = "2006-01-02"
+	CST_TIME_HMS        = "15:04:05"
+	CST_UPPERCASE       = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+	CST_LOWERCASE       = "abcdefghijklmnopqrstuvwxyz"
+	CST_ALPHABETIC      = CST_UPPERCASE + CST_LOWERCASE
+	CST_NUMERIC         = "0123456789"
+	CST_ALPHANUMERIC    = CST_ALPHABETIC + CST_NUMERIC
+	CST_ALPHANUMERICLOW = CST_UPPERCASE + CST_NUMERIC
+	CST_SYMBOLS         = "`" + `~!@#$%^&*()-_+={}[]|\;:"<>,./?`
+	CST_Hex             = CST_NUMERIC + "abcdef"
+	CST_MAXUINT32       = 4294967295
+	CST_LOG_FORMAT      = "%v : %d - %s \n %s "
 )
 
 var (
+	Autn         autn.Autn
 	ByteHelper   autn.ByteHelper
 	StringHelper autn.StringHelper
 	HashHelper   autn.HashHelper
@@ -34,13 +30,14 @@ var (
 	SliceHelper  autn.SliceHelper
 	SysHelper    autn.SysHelper
 	DateHelper   autn.DateHelper
-
-	Random autn.Random
-
-	EncodeHelper  encode.EncodeHelper
-	EncryptHelper encrypt.EncryptHelper
-	ComError      common.ComError
-	FileHepler    file.FileHelper
-	HttpHelper    http.HttpHelper
-	Response      http.Response
+	HttpHelper   autn.HttpHelper
+	Response     autn.Response
+	Random       autn.Random
+	RsaHelper    autn.RsaHelper
+	AesHelper    autn.AesHelper
+	DesHelper    autn.DesHelper
+	EncodeHelper autn.EncodeHelper
+	FileHelper   autn.FileHelper
+	ZipHelper    autn.ZipHelper
+	BusError     autn.BusError
 )

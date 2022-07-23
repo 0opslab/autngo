@@ -1,12 +1,15 @@
 package test
 
 import (
+	"reflect"
 	"testing"
 
-	Autngo "github.com/0opslab/autngo"
+	Augo "github.com/0opslab/autngo"
 )
 
 func Test_error(t *testing.T) {
-	errors := Autngo.ComError.ComError("TestString测试")
-	print("error",errors)
+	resp := Augo.HttpHelper.HttpGet("https://studygolang.com/")
+	print(reflect.TypeOf(resp).Name(), "==>", len(resp))
+	print(Augo.Autn.ErrorMsg("res", nil))
+	//print(Augo.)
 }

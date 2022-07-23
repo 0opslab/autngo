@@ -1,7 +1,8 @@
-package encode
+package autn
 
 import (
 	"bytes"
+	"compress/flate"
 	"encoding/hex"
 	"io/ioutil"
 
@@ -9,16 +10,10 @@ import (
 	"golang.org/x/text/transform"
 )
 
-type EncodeHelper struct{
-
+type EncodeHelper struct {
 }
 
-const num2char = "0123456789abcdefghijklmnopqrstuvwxyz"
-
-var tenToAny map[int]string = map[int]string{0: "0", 1: "1", 2: "2", 3: "3", 4: "4", 5: "5", 6: "6", 7: "7", 8: "8", 9: "9",
-	10: "a", 11: "b", 12: "c", 13: "d", 14: "e", 15: "f", 16: "g", 17: "h", 18: "i", 19: "j", 20: "k", 21: "l", 22: "m", 23: "n", 24: "o",
-	25: "p", 26: "q", 27: "r", 28: "s", 29: "t", 30: "u", 31: "v", 32: "w", 33: "x", 34: "y", 35: "z"}
-
+// transform GBK bytes to UTF-8 bytes
 func (gt *EncodeHelper) GbkToUtf8(str []byte) (b []byte, err error) {
 	r := transform.NewReader(bytes.NewReader(str), simplifiedchinese.GBK.NewDecoder())
 	b, err = ioutil.ReadAll(r)
@@ -38,7 +33,8 @@ func (gt *EncodeHelper) Utf8ToGbk(str []byte) (b []byte, err error) {
 	return
 }
 
-// transform GBK string to UTF-8 string and replace it, if transformed success, returned nil error, or died by error message
+// transform GBK string to UTF-8 string and replace it, if transformed success
+// returned nil error, or died by error message
 func (gt *EncodeHelper) StrToUtf8(str string) (string, error) {
 	b, err := gt.GbkToUtf8([]byte(str))
 	if err != nil {
@@ -47,7 +43,8 @@ func (gt *EncodeHelper) StrToUtf8(str string) (string, error) {
 	return string(b), nil
 }
 
-// transform UTF-8 string to GBK string and replace it, if transformed success, returned nil error, or died by error message
+// transform UTF-8 string to GBK string and replace it, if transformed success
+// returned nil error, or died by error message
 func (gt *EncodeHelper) StrToGBK(str string) (string, error) {
 	b, err := gt.Utf8ToGbk([]byte(str))
 	if err != nil {
@@ -57,15 +54,31 @@ func (gt *EncodeHelper) StrToGBK(str string) (string, error) {
 }
 
 // 字符串转16进制
-func (gt *EncodeHelper) StrHex(str string) (string) {
+func (gt *EncodeHelper) StrHex(str string) string {
 	return hex.EncodeToString([]byte(str))
 }
 
 // 十六进制转字符串
-func (gt *EncodeHelper) HexStr(hexStr string) (string) {
+func (gt *EncodeHelper) HexStr(hexStr string) string {
 	b, err := hex.DecodeString(hexStr)
-	if (err != nil) {
+	if err != nil {
 		return ""
 	}
 	return string(b)
+}
+
+//@func 字符串zip编码压缩
+func (gt *EncodeHelper) ZipEncode(input string) (result []byte, err error) {
+	var buf bytes.Buffer
+	w, err := flate.NewWriter(&buf, -1)
+	w.Write([]byte(input))
+	w.Close()
+	result = buf.Bytes()
+	return
+}
+
+//@func 字符串zip编码解压缩还原
+func (gt *EncodeHelper) ZipDecode(input []byte) (result string, err error) {
+	bytess, err := ioutil.ReadAll(flate.NewReader(bytes.NewReader(input)))
+	return string(bytess), err
 }
